@@ -235,10 +235,15 @@ for n in range(0, opt.level ):
         outfilename += '_light%d' % nepochsLight[n]
 os.system('mkdir -p {0}'.format(outfilename ) )
 
-with open(opt.imList, 'r') as imIdIn:
-    imIds = imIdIn.readlines()
-imList = [osp.join(opt.dataRoot,x.strip() ) for x in imIds ]
-imList = sorted(imList )
+if opt.imList != "":
+    with open(opt.imList, 'r') as imIdIn:
+        imIds = imIdIn.readlines()
+    imList = [osp.join(opt.dataRoot,x.strip() ) for x in imIds ]
+else:
+    img_postfix = "jpg"
+    imList = glob.glob(osp.join(opt.dataRoot, f'*.{img_postfix}'))
+imList = sorted(imList)
+print(f"Number of images: {len(imList)}")
 
 j = 0
 for imName in imList:
