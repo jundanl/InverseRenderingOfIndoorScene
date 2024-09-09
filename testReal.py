@@ -267,14 +267,14 @@ for imName in imList:
     imOutputNames.append(osp.join(outfilename, imId ) )
 
     for n in range(0, opt.level ):
-        albedoNames.append(osp.join(outfilename, imId.replace('.png', '_albedo%d.npy' % n) ) )
-        albedoImNames.append(osp.join(outfilename, imId.replace('.png', '_albedo%d.png' % n ) ) )
-        normalNames.append(osp.join(outfilename, imId.replace('.png', '_normal%d.npy' % n ) ) )
-        normalImNames.append(osp.join(outfilename, imId.replace('.png', '_normal%d.png' % n) ) )
-        roughNames.append(osp.join(outfilename, imId.replace('.png', '_rough%d.npy' % n) ) )
-        roughImNames.append(osp.join(outfilename, imId.replace('.png', '_rough%d.png' % n) ) )
-        depthNames.append(osp.join(outfilename, imId.replace('.png', '_depth%d.npy' % n) ) )
-        depthImNames.append(osp.join(outfilename, imId.replace('.png', '_depth%d.png' % n) ) )
+        albedoNames.append(osp.join(outfilename, imId.replace(f".{img_postfix}", '_albedo%d.npy' % n) ) )
+        albedoImNames.append(osp.join(outfilename, imId.replace(f".{img_postfix}", '_albedo%d.png' % n ) ) )
+        normalNames.append(osp.join(outfilename, imId.replace(f".{img_postfix}", '_normal%d.npy' % n ) ) )
+        normalImNames.append(osp.join(outfilename, imId.replace(f".{img_postfix}", '_normal%d.png' % n) ) )
+        roughNames.append(osp.join(outfilename, imId.replace(f".{img_postfix}", '_rough%d.npy' % n) ) )
+        roughImNames.append(osp.join(outfilename, imId.replace(f".{img_postfix}", '_rough%d.png' % n) ) )
+        depthNames.append(osp.join(outfilename, imId.replace(f".{img_postfix}", '_depth%d.npy' % n) ) )
+        depthImNames.append(osp.join(outfilename, imId.replace(f".{img_postfix}", '_depth%d.png' % n) ) )
 
         albedoBSNames = albedoNames[n].replace('albedo', 'albedoBs')
         albedoImBSNames = albedoImNames[n].replace('albedo', 'albedoBs')
@@ -283,14 +283,14 @@ for imName in imList:
         depthBSNames = depthNames[n].replace('depth', 'depthBs')
         depthImBSNames = depthImNames[n].replace('depth', 'depthBs')
 
-        envmapsPredSGNames.append(osp.join(outfilename, imId.replace('.png', '_envmapSG%d.npy' % n) ) )
-        shadingNames.append(osp.join(outfilename, imId.replace('.png', '_shading%d.png' % n) ) )
-        envmapPredNames.append(osp.join(outfilename, imId.replace('.png', '_envmap%d.npz' % n) ) )
-        envmapPredImNames.append(osp.join(outfilename, imId.replace('.png', '_envmap%d.png' % n) ) )
-        renderedNames.append(osp.join(outfilename, imId.replace('.png', '_rendered%d.npy' % n) ) )
-        renderedImNames.append(osp.join(outfilename, imId.replace('.png', '_rendered%d.png' % n) ) )
+        envmapsPredSGNames.append(osp.join(outfilename, imId.replace(f".{img_postfix}", '_envmapSG%d.npy' % n) ) )
+        shadingNames.append(osp.join(outfilename, imId.replace(f".{img_postfix}", '_shading%d.png' % n) ) )
+        envmapPredNames.append(osp.join(outfilename, imId.replace(f".{img_postfix}", '_envmap%d.npz' % n) ) )
+        envmapPredImNames.append(osp.join(outfilename, imId.replace(f".{img_postfix}", '_envmap%d.png' % n) ) )
+        renderedNames.append(osp.join(outfilename, imId.replace(f".{img_postfix}", '_rendered%d.npy' % n) ) )
+        renderedImNames.append(osp.join(outfilename, imId.replace(f".{img_postfix}", '_rendered%d.png' % n) ) )
 
-        cLightNames.append(osp.join(outfilename, imId.replace('.png', '_cLight%d.mat' % n) ) )
+        cLightNames.append(osp.join(outfilename, imId.replace(f".{img_postfix}", '_cLight%d.mat' % n) ) )
 
     # Load the image from cpu to gpu
     assert(osp.isfile(imName ) )
