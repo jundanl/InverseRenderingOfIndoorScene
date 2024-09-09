@@ -553,7 +553,7 @@ for imName in imList:
             albedoPred = albedoPreds[n].data.cpu().numpy().squeeze()
 
         albedoPred = albedoPred.transpose([1, 2, 0] )
-        albedoPred = (albedoPred ) ** (1.0/2.2 )
+        # albedoPred = (albedoPred ) ** (1.0/2.2 )
         albedoPred = cv2.resize(albedoPred, (nw, nh), interpolation = cv2.INTER_LINEAR )
 
         albedoPredIm = (np.clip(255 * albedoPred, 0, 255) ).astype(np.uint8)
@@ -599,7 +599,7 @@ for imName in imList:
             else:
                 albedoBSPred = albedoBSPreds[n].data.cpu().numpy().squeeze()
             albedoBSPred = albedoBSPred.transpose([1, 2, 0] )
-            albedoBSPred = (albedoBSPred ) ** (1.0/2.2 )
+            # albedoBSPred = (albedoBSPred ) ** (1.0/2.2 )
             albedoBSPred = cv2.resize(albedoBSPred, (nw, nh), interpolation = cv2.INTER_LINEAR )
 
             albedoBSPredIm = ( np.clip(255 * albedoBSPred, 0, 255) ).astype(np.uint8)
@@ -644,7 +644,8 @@ for imName in imList:
             shading = shading.transpose([1, 2, 0] )
             shading = shading / np.mean(shading ) / 3.0
             shading = np.clip(shading, 0, 1)
-            shading = (255 * shading ** (1.0/2.2) ).astype(np.uint8 )
+            # shading = (255 * shading ** (1.0/2.2) ).astype(np.uint8 )
+            shading = (255 * shading).astype(np.uint8)
             cv2.imwrite(shadingNames[n], shading[:, :, ::-1] )
 
         for n in range(0, len(cLights) ):
