@@ -242,6 +242,8 @@ if opt.imList != "":
 else:
     img_postfix = "jpg"
     imList = glob.glob(osp.join(opt.dataRoot, f'*.{img_postfix}'))
+    img_postfix = "png"
+    imList += glob.glob(osp.join(opt.dataRoot, f'*.{img_postfix}'))
 imList = sorted(imList)
 print(f"Number of images: {len(imList)}")
 
