@@ -1,3 +1,4 @@
+import time
 import torch
 import numpy as np
 from torch.autograd import Variable
@@ -97,7 +98,7 @@ imHeights = [opt.imHeight0, opt.imHeight1 ]
 imWidths = [opt.imWidth0, opt.imWidth1 ]
 
 os.system('mkdir {0}'.format(opt.testRoot ) )
-os.system('cp *.py %s' % opt.testRoot )
+# os.system('cp *.py %s' % opt.testRoot )
 
 opt.seed = 0
 print("Random Seed: ", opt.seed )
@@ -361,6 +362,7 @@ for imName in imList:
     cLights = []
 
     ################# BRDF Prediction ######################
+    end = time.time()
     inputBatch = imBatches[0]
     x1, x2, x3, x4, x5, x6 = encoders[0](inputBatch )
 
@@ -384,8 +386,10 @@ for imName in imList:
     normalPreds.append(normalPred )
     roughPreds.append(roughPred )
     depthPreds.append(depthPred )
+    print(f"BRDF Prediction time: {time.time() - end:.2f}s")
 
     ################# Lighting Prediction ###################
+    end = time.time()
     if opt.isLight or opt.level == 2:
         # Interpolation
         imBatchLarge = F.interpolate(imBatches[0], [imBatchSmall.size(2) *
@@ -440,8 +444,10 @@ for imName in imList:
 
         diffusePred = diffusePredNew
         specularPred = specularPredNew
+    print(f"Lighting Prediction time: {time.time() - end:.2f}s")
 
     #################### BRDF Prediction ####################
+    end = time.time()
     if opt.level == 2:
         albedoPredLarge = F.interpolate(albedoPreds[0], [newImHeight[1], newImWidth[1] ], mode='bilinear')
         normalPredLarge = F.interpolate(normalPreds[0], [newImHeight[1], newImWidth[1] ], mode='bilinear')
@@ -477,8 +483,10 @@ for imName in imList:
         normalPreds.append(normalPred )
         roughPreds.append(roughPred )
         depthPreds.append(depthPred )
+    print(f"BRDF Prediction time: {time.time() - end:.2f}s")
 
     ############### Lighting Prediction ######################
+    end = time.time()
     if opt.level == 2 and opt.isLight:
         # Interpolation
         imBatchLarge = F.interpolate(imBatches[1], [imBatchSmall.size(2) *
@@ -534,8 +542,10 @@ for imName in imList:
 
         diffusePred = diffusePredNew
         specularPred = specularPredNew
+    print(f"Lighting Prediction time: {time.time() - end:.2f}s")
 
     #################### BilateralLayer ######################
+    end = time.time()
     if opt.isBS:
         for n in range(0, opt.level ):
             albedoBSPred, albedoConf = albedoBSs[n](imBatches[n], albedoPreds[n].detach(), albedoPreds[n] )
@@ -545,9 +555,11 @@ for imName in imList:
             roughBSPreds.append(roughBSPred )
             depthBSPred, depthConf = depthBSs[n](imBatches[n], albedoPreds[n].detach(), depthPreds[n] )
             depthBSPreds.append(depthBSPred )
+    print(f"BilateralLayer time: {time.time() - end:.2f}s")
 
     #################### Output Results #######################
     # Save the albedo
+    end = time.time()
     for n in range(0, len(albedoPreds ) ):
         if n < len(cAlbedos ):
             albedoPred = (albedoPreds[n] * cAlbedos[n]).data.cpu().numpy().squeeze()
@@ -561,8 +573,10 @@ for imName in imList:
         albedoPredIm = (np.clip(255 * albedoPred, 0, 255) ).astype(np.uint8)
 
         cv2.imwrite(albedoImNames[n], albedoPredIm[:, :, ::-1] )
+    print(f"Save albedo time: {time.time() - end:.2f}s")
 
     # Save the normal
+    end = time.time()
     for n in range(0, len(normalPreds ) ):
         normalPred = normalPreds[n].data.cpu().numpy().squeeze()
         normalPred = normalPred.transpose([1, 2, 0] )
@@ -572,6 +586,7 @@ for imName in imList:
 
         normalPredIm = (255 * 0.5*(normalPred+1) ).astype(np.uint8)
         cv2.imwrite(normalImNames[n], normalPredIm[:, :, ::-1] )
+    print(f"Save normal time: {time.time() - end:.2f}s")
 
     # Save the rough
     for n in range(0, len(roughPreds ) ):
@@ -582,6 +597,7 @@ for imName in imList:
         cv2.imwrite(roughImNames[n], roughPredIm )
 
     # Save the depth
+    end = time.time()
     for n in range(0, len(depthPreds ) ):
         depthPred = depthPreds[n].data.cpu().numpy().squeeze()
         np.save(depthNames[n], depthPred )
@@ -592,7 +608,9 @@ for imName in imList:
         depthOut = 1 / np.clip(depthPred+1, 1e-6, 10)
         depthPredIm = (255 * depthOut ).astype(np.uint8)
         cv2.imwrite(depthImNames[n], depthPredIm )
+    print(f"Save depth time: {time.time() - end:.2f}s")
 
+    end = time.time()
     if opt.isBS:
         # Save the albedo bs
         for n in range(0, len(albedoBSPreds ) ):
@@ -626,7 +644,9 @@ for imName in imList:
             depthOut = 1 / np.clip(depthBSPred+1, 1e-6, 10)
             depthBSPredIm = (255 * depthOut ).astype(np.uint8)
             cv2.imwrite(depthImNames[n].replace('depth', 'depthBS'), depthBSPredIm )
+    print(f"Save BS time: {time.time() - end:.2f}s")
 
+    end = time.time()
     if opt.isLight:
         # Save the envmapImages
         for n in range(0, len(envmapsPredImages ) ):
@@ -663,6 +683,7 @@ for imName in imList:
 
             renderedPred = (np.clip(renderedPred, 0, 1) * 255).astype(np.uint8 )
             cv2.imwrite(renderedImNames[n], renderedPred[:, :, ::-1] )
+    print(f"Save Lighting time: {time.time() - end:.2f}s")
 
     # Save the image
     cv2.imwrite(imOutputNames[0], im_cpu[:,:, ::-1] )
