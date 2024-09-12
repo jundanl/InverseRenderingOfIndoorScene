@@ -2,3 +2,5 @@
 experiments/
 data/
 out/
+models/
+openrooms_utils/
