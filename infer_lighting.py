@@ -1,4 +1,6 @@
 import time
+import sys
+
 import torch
 import numpy as np
 from torch.autograd import Variable
@@ -14,6 +16,10 @@ import BilateralLayer as bs
 import torch.nn.functional as F
 import scipy.io as io
 import utils
+
+openrooms_utils_path = "./openrooms_utils"
+sys.path.append(openrooms_utils_path)
+from openrooms_utils import env_util
 
 parser = argparse.ArgumentParser()
 # The locationi of testing set
@@ -62,6 +68,8 @@ parser.add_argument('--isBS', action='store_true', help='whether to use bilatera
 
 parser.add_argument('--save_shading', action='store_true', default=False,
                     help='whether to save shading. note that inferring shading is slow.')
+parser.add_argument('--save_tm_linear_envmap', action='store_true', default=False,
+                    help='whether to save tone-mapped linear env maps.')
 
 # Image Picking
 opt = parser.parse_args()
@@ -661,7 +669,12 @@ for imName in imList:
             np.savez_compressed(envmapPredImNames[n],
                     env = np.ascontiguousarray(envmapsPredImage[:, :, :, :, ::-1] ) )
 
-            utils.writeEnvToFile(envmapsPredImages[n], 0, envmapPredImNames[n], nrows=24, ncols=16 )
+            # utils.writeEnvToFile(envmapsPredImages[n], 0, envmapPredImNames[n], nrows=24, ncols=16 )
+            vis_env_map = env_util.visualize_pixelwise_env_maps(envmapsPredImages[n][0], nrows=24, ncols=16, gap=1,
+                                                                rescale=opt.save_tm_linear_envmap, rgb2srgb=not opt.save_tm_linear_envmap,
+                                                                output_type="numpy")
+            vis_env_map = (vis_env_map.clip(min=0.0, max=1.0) * 255).astype(np.uint8)
+            cv2.imwrite(envmapPredImNames[n], vis_env_map[:, :, ::-1])
 
         for n in range(0, len(envmapsPreds ) ):
             envmapsPred = envmapsPreds[n].data.cpu().numpy()
