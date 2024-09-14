@@ -60,6 +60,9 @@ parser.add_argument('--level', type=int, default=2, help='the cascade level')
 parser.add_argument('--isLight', action='store_true', help='whether to predict lightig')
 parser.add_argument('--isBS', action='store_true', help='whether to use bilateral solver')
 
+parser.add_argument('--save_shading', action='store_true', default=False,
+                    help='whether to save shading. note that inferring shading is slow.')
+
 # Image Picking
 opt = parser.parse_args()
 print(opt)
@@ -505,6 +508,7 @@ for imName in imList:
         x1, x2, x3, x4, x5, x6 = lightEncoders[1](inputBatch, envmapsPred )
 
         # Prediction
+        del axisPred, lambPred, weightPred
         axisPred = axisDecoders[1](x1, x2, x3, x4, x5, x6, imBatchSmall )
         lambPred = lambDecoders[1](x1, x2, x3, x4, x5, x6, imBatchSmall )
         weightPred = weightDecoders[1](x1, x2, x3, x4, x5, x6, imBatchSmall )
@@ -662,6 +666,9 @@ for imName in imList:
         for n in range(0, len(envmapsPreds ) ):
             envmapsPred = envmapsPreds[n].data.cpu().numpy()
             np.save(envmapsPredSGNames[n], envmapsPred )
+            if not opt.save_shading:
+                # Skip. Saving shading is slow
+                continue
             shading = utils.predToShading(envmapsPred, SGNum = opt.SGNum )
             shading = shading.transpose([1, 2, 0] )
             shading = shading / np.mean(shading ) / 3.0
