@@ -21,6 +21,49 @@ openrooms_utils_path = "./openrooms_utils"
 sys.path.append(openrooms_utils_path)
 from openrooms_utils import env_util
 
+
+def output_results(opt, env_names, env_pred_parameters, env_images, normal_preds, cLights):
+    output_dir = opt.testRoot
+    filename_base = os.path.basename(env_names[-1])[:-len("_envmap1.npz")]
+    os.makedirs(output_dir, exist_ok=True)
+    # Get the final results
+    env_param = env_pred_parameters[-1].detach()
+    env_image = env_images[-1].detach()
+    normal = normal_preds[-1].detach()
+    cLight = cLights[-1]
+    assert env_param.shape[0] == normal.shape[0] == 1 and isinstance(cLight, float), \
+        f"shape: env_param: {env_param.shape}, normal: {normal.shape}, cLight: {cLight}"
+    # Process
+    normal = normal[0]
+    env_param = env_param[0]
+    env_image = env_image[0]
+    dim_axis, dim_lamb, dim_weight = 3, 1, 3
+    sg_num = opt.SGNum
+    num_axis, num_lamb, num_weight = dim_axis * sg_num, dim_lamb * sg_num, dim_weight * sg_num
+    assert num_axis + num_lamb + num_weight == env_param.shape[0], \
+        f"shape: env_param: {env_param.shape}, num_axis: {num_axis}, num_lamb: {num_lamb}, num_weight: {num_weight}"
+    axis, lamb, weight = env_param[:num_axis], env_param[num_axis:num_axis + num_lamb], env_param[-num_weight:]
+    _, height, width = env_param.shape
+    axis = axis.reshape(sg_num, dim_axis, height, width)
+    lamb = lamb.reshape(sg_num, dim_lamb, height, width)
+    lamb = torch.tan(np.pi / 2 * lamb * 0.999)  # same as in output2env of models.py
+    weight = weight.reshape(sg_num, dim_weight, height, width)
+    weight = torch.tan(np.pi / 2 * weight * 0.999)  # same as in output2env of models.py
+    weight = weight * cLight
+
+    # Save the results
+    out_dict = {
+        "axis": axis.cpu(),
+        "lamb": lamb.cpu(),
+        "weight": weight.cpu(),
+        "env_image": env_image.cpu(),
+        "normal": normal.cpu(),
+    }
+    out_file_path = os.path.join(output_dir, f"{filename_base}_output.pth")
+    torch.save(out_dict, out_file_path)
+    print(f"Saved output to {out_file_path}.")
+
+
 parser = argparse.ArgumentParser()
 # The locationi of testing set
 parser.add_argument('--dataRoot', help='path to real images')
@@ -660,6 +703,9 @@ for imName in imList:
 
     end = time.time()
     if opt.isLight:
+        # Save environmental map predictions (by Jundan)
+        output_results(opt, envmapPredNames, envmapsPreds, envmapsPredImages, normalPreds, cLights)
+
         # Save the envmapImages
         for n in range(0, len(envmapsPredImages ) ):
             envmapsPredImage = envmapsPredImages[n].data.cpu().numpy().squeeze()
