@@ -111,7 +111,7 @@ parser.add_argument('--isBS', action='store_true', help='whether to use bilatera
 
 parser.add_argument('--save_shading', action='store_true', default=False,
                     help='whether to save shading. note that inferring shading is slow.')
-parser.add_argument('--save_tm_linear_envmap', action='store_true', default=False,
+parser.add_argument('--vis_tm_linear_envmap', action='store_true', default=False,
                     help='whether to save tone-mapped linear env maps.')
 
 # Image Picking
@@ -717,7 +717,7 @@ for imName in imList:
 
             # utils.writeEnvToFile(envmapsPredImages[n], 0, envmapPredImNames[n], nrows=24, ncols=16 )
             vis_env_map = env_util.visualize_pixelwise_env_maps(envmapsPredImages[n][0], nrows=24, ncols=16, gap=1,
-                                                                rescale=opt.save_tm_linear_envmap, rgb2srgb=not opt.save_tm_linear_envmap,
+                                                                rescale=opt.vis_tm_linear_envmap, rgb2srgb=not opt.vis_tm_linear_envmap,
                                                                 output_type="numpy")
             vis_env_map = (vis_env_map.clip(min=0.0, max=1.0) * 255).astype(np.uint8)
             cv2.imwrite(envmapPredImNames[n], vis_env_map[:, :, ::-1])
