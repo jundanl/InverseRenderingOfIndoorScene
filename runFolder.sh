@@ -10,7 +10,7 @@ CUDA_VISIBLE_DEVICES="6" python3 infer_lighting.py --cuda --dataRoot ./data/ --i
     --envRow 192 --envCol 256
 
 
-CUDA_VISIBLE_DEVICES="0" python3 infer_lighting.py --cuda --dataRoot ./data/ --imList "" \
+CUDA_VISIBLE_DEVICES="9" python3 infer_lighting.py --cuda \
     --testRoot out/real_model_default --isLight --level 2 \
     --experiment0 models/check_cascade0_w320_h240 --nepoch0 14 \
     --experimentLight0 models/check_cascadeLight0_sg12_offset1.0 --nepochLight0 10 \
