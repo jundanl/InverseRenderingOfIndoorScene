@@ -26,13 +26,13 @@ class LightSORDataset(Dataset):
         self.load_gt_images = [] if load_gt_images is None else load_gt_images
 
         # Get the scene list
-        self.scene_list = os.listdir(self.data_root)
-        self.scene_list.sort()
-        print(f"Found {len(self.scene_list)} scenes in {self.data_root}.")
+        scene_list = os.listdir(self.data_root)
+        scene_list.sort()
 
         # Image path and output_name
         self.bk_img_list = []
-        for scene in self.scene_list:
+        self.scene_list = []  # exclude not needed scenes
+        for scene in scene_list:
             bk_img_dir = os.path.join(self.data_root, scene, self.BACKGROUND_DIR)
             input_srgb_path = glob.glob(os.path.join(bk_img_dir, f"*{self.image_postfix.input}"))
             assert len(input_srgb_path) == 1, \
@@ -55,6 +55,9 @@ class LightSORDataset(Dataset):
                     print(f"Primary light type is not sun in {scene_info_path}. Skip this scene.")
                     continue
             self.bk_img_list.append(input_srgb_path)
+            self.scene_list.append(os.path.join(self.data_root, scene))
+        assert len(self.bk_img_list) == len(self.scene_list), "bk_img_list and scene_list should have the same length."
+        print(f"Found {len(self.scene_list)} scenes in {self.data_root}.")
 
     def __len__(self):
         return len(self.bk_img_list)
@@ -68,6 +71,10 @@ class LightSORDataset(Dataset):
         # Dir
         bk_dir = os.path.dirname(bk_srgb_image_path)
         scene_dir = os.path.dirname(bk_dir)
+        # check scene_dir and self.scene_list[idx] are the same, using absolute path
+        assert os.path.abspath(scene_dir) == os.path.abspath(self.scene_list[idx]), \
+            f"scene_dir and self.scene_list[idx] are not the same: {scene_dir}, {self.scene_list[idx]}"
+
         # img_name is the name of the scene directory
         img_name = f"{os.path.basename(scene_dir)}_background"
 
@@ -94,6 +101,7 @@ class LightSORDataset(Dataset):
             "index": idx,
             "img_name": img_name,
             "bk_srgb_image_path": bk_srgb_image_path,
+            "scene_path": scene_dir,
             "bk_srgb_image": bk_srgb_image,
             "camera_info": camera_info,
             "scene_info": scene_info,
