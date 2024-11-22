@@ -17,8 +17,6 @@ import torch.nn.functional as F
 import scipy.io as io
 import utils
 
-from lights_or_dataset import LightSORDataset
-
 openrooms_utils_path = "./openrooms_utils"
 sys.path.append(openrooms_utils_path)
 from openrooms_utils import env_util
@@ -67,11 +65,13 @@ def output_results(opt, env_names, env_pred_parameters, env_images, normal_preds
 
 
 parser = argparse.ArgumentParser()
-# The locationi of testing set
+# The location of testing set
 parser.add_argument('--dataRoot',
                     default="./test_data/LightS_OR_rendered/processed_out/20240926",
                     help='path to real images')
-# parser.add_argument('--imList', help='path to image list')
+parser.add_argument('--imList',
+                    default="",
+                    help='path to image list')
 
 parser.add_argument('--experiment0', default=None, help='the path to the model of first cascade' )
 parser.add_argument('--experimentLight0', default=None, help='the path to the model of first cascade' )
@@ -294,28 +294,30 @@ for n in range(0, opt.level ):
         outfilename += '_light%d' % nepochsLight[n]
 os.system('mkdir -p {0}'.format(outfilename ) )
 
-# if opt.imList != "":
-#     with open(opt.imList, 'r') as imIdIn:
-#         imIds = imIdIn.readlines()
-#     imList = [osp.join(opt.dataRoot,x.strip() ) for x in imIds ]
-# else:
-#     img_postfix = "jpg"
-#     imList = glob.glob(osp.join(opt.dataRoot, f'*.{img_postfix}'))
-#     img_postfix = "png"
-#     imList += glob.glob(osp.join(opt.dataRoot, f'*.{img_postfix}'))
-# imList = sorted(imList)
-# print(f"Number of images: {len(imList)}")
-dataset = LightSORDataset(opt.dataRoot, only_sunlight_scene=True, load_gt_images=None)
-print(f"Number of images in dataset: {len(dataset)}")
+if opt.imList != "":
+    with open(opt.imList, 'r') as imIdIn:
+        imIds = imIdIn.readlines()
+    imList = [osp.join(opt.dataRoot,x.strip() ) for x in imIds ]
+else:
+    IMG_POSTFIXS = ["*.jpg", "*.png", "*.jpeg"]
+    imList = []
+    for img_postfix in IMG_POSTFIXS:
+        imList += glob.glob(osp.join(opt.dataRoot, img_postfix))
+imList = sorted(imList)
+print(f"Number of images: {len(imList)}")
+# dataset = LightSORDataset(opt.dataRoot, only_sunlight_scene=True, load_gt_images=None)
+# print(f"Number of images in dataset: {len(dataset)}")
 
 
 j = 0
-for data in dataset:
-    imPath = data["bk_srgb_image_path"]
-    imName = imId = data["img_name"]
-    # img_postfix = imName.split('.')[-1]
+for imPath in imList:
+# for data in dataset:
+#     imPath = data["bk_srgb_image_path"]
+    fileName = os.path.basename(imPath)
+    imName = imId = fileName.split('.')[0]
+    img_postfix = fileName.split('.')[-1]
     j += 1
-    print('%d/%d: %s' % (j, len(dataset), imName) )
+    print('%d/%d: %s' % (j, len(imList), imName))
 
     imBatches = []
 
