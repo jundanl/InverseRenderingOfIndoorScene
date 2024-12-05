@@ -314,8 +314,9 @@ for imPath in imList:
 # for data in dataset:
 #     imPath = data["bk_srgb_image_path"]
     fileName = os.path.basename(imPath)
-    imName = imId = fileName.split('.')[0]
     img_postfix = fileName.split('.')[-1]
+    imName = imId = ".".join(fileName.split('.')[:-1])
+
     j += 1
     print('%d/%d: %s' % (j, len(imList), imName))
 
